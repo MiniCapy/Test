@@ -1,10 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>сайт</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прыгающий шарик в круге</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #gameContainer {
+            position: relative;
+        }
+        #circle {
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            background-color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+        #ball {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e74c3c;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        #controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Привет, мир!</h1>
-    <p>Эь.</p>
+    <div id="gameContainer">
+        <div id="circle">
+            <div id="ball"></div>
+        </div>
+        <div id="controls">
+            <button id="startBtn">Старт</button>
+            <button id="stopBtn">Стоп</button>
+            <button id="resetBtn">Сброс</button>
+        </div>
+    </div>
+
+    <script>
+        const ball = document.getElementById('ball');
+        const circle = document.getElementById('circle');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Параметры игры
+        const circleRadius = circle.offsetWidth / 2;
+        const ballRadius = ball.offsetWidth / 2;
+        
+        let ballX = circleRadius;
+        let ballY = circleRadius;
+        let velocityX = 0;
+        let velocityY = 0;
+        let gravity = 0.2;
+        let friction = 0.99;
+        let bounce = 0.8;
+        let animationId;
+        let isRunning = false;
+
+        // Инициализация
+        function init() {
+            ballX = circleRadius;
+            ballY = circleRadius;
+            velocityX = (Math.random() - 0.5) * 10;
+            velocityY = (Math.random() - 0.5) * 10;
+            updateBallPosition();
+        }
+
+        // Обновление позиции шарика
+        function updateBallPosition() {
+            ball.style.left = `${ballX - ballRadius}px`;
+            ball.style.top = `${ballY - ballRadius}px`;
+        }
+
+        // Проверка столкновения со стенками круга
+        function checkCollision() {
+            const dx = ballX - circleRadius;
+            const dy = ballY - circleRadius;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > circleRadius - ballRadius) {
+                // Вычисляем нормаль к точке столкновения
+                const nx = dx / distance;
+                const ny = dy / distance;
+                
+                // Проекция скорости на нормаль
+                const dotProduct = velocityX * nx + velocityY * ny;
+                
+                // Корректируем позицию шарика
+                const overlap = distance - (circleRadius - ballRadius);
+                ballX -= overlap * nx;
+                ballY -= overlap * ny;
+                
+                // Отражение скорости с учетом упругости
+                velocityX -= (1 + bounce) * dotProduct * nx;
+                velocityY -= (1 + bounce) * dotProduct * ny;
+                
+                // Добавляем трение
+                velocityX *= friction;
+                velocityY *= friction;
+            }
+        }
+
+        // Игровой цикл
+        function gameLoop() {
+            // Применяем гравитацию
+            velocityY += gravity;
+            
+            // Обновляем позицию
+            ballX += velocityX;
+            ballY += velocityY;
+            
+            // Проверяем столкновения
+            checkCollision();
+            
+            // Обновляем отображение
+            updateBallPosition();
+            
+            // Продолжаем анимацию
+            if (isRunning) {
+                animationId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        // Обработчики кнопок
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                gameLoop();
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            isRunning = false;
+            cancelAnimationFrame(animationId);
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isRunning = false;
+            cancelAnimationFrame(animationId);
+            init();
+        });
+
+        // Начальная инициализация
+        init();
+
+        // Можно бросить шарик кликом
+        circle.addEventListener('click', (e) => {
+            const rect = circle.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            // Устанавливаем шарик в место клика
+            ballX = clickX;
+            ballY = clickY;
+            
+            // Даем случайный импульс
+            velocityX = (Math.random() - 0.5) * 15;
+            velocityY = (Math.random() - 0.5) * 15;
+            
+            updateBallPosition();
+            
+            // Если игра не запущена, запускаем
+            if (!isRunning) {
+                isRunning = true;
+                gameLoop();
+            }
+        });
+    </script>
 </body>
-</html>
+        </html>
