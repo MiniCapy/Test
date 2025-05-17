@@ -1,202 +1,246 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Прыгающий шарик в круге</title>
+    <title>SimplePaste - Share your text online</title>
     <style>
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
             margin: 0;
-            overflow: hidden;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #0078d7;
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+        
+        header p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+        }
+        
+        .paste-form {
+            background-color: white;
+            padding: 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .expiration-options {
             display: flex;
-            justify-content: center;
+            gap: 15px;
             align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
         }
-        #gameContainer {
-            position: relative;
-        }
-        #circle {
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            border: 2px solid #333;
-            background-color: #fff;
-            position: relative;
-            overflow: hidden;
-        }
-        #ball {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: #e74c3c;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-        }
-        #controls {
-            margin-top: 20px;
-            text-align: center;
-        }
+        
         button {
-            padding: 8px 16px;
-            margin: 0 5px;
-            cursor: pointer;
-            background-color: #3498db;
+            background-color: #0078d7;
             color: white;
             border: none;
+            padding: 12px 20px;
+            font-size: 16px;
             border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
+        
         button:hover {
-            background-color: #2980b9;
+            background-color: #005a9e;
+        }
+        
+        .recent-pastes {
+            background-color: white;
+            padding: 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .recent-pastes h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .paste-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .paste-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .paste-item:last-child {
+            border-bottom: none;
+        }
+        
+        .paste-title {
+            font-weight: bold;
+            color: #0078d7;
+            text-decoration: none;
+        }
+        
+        .paste-meta {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="circle">
-            <div id="ball"></div>
+    <header>
+        <div class="container">
+            <h1>SimplePaste</h1>
+            <p>A simple way to share your text online</p>
         </div>
-        <div id="controls">
-            <button id="startBtn">Старт</button>
-            <button id="stopBtn">Стоп</button>
-            <button id="resetBtn">Сброс</button>
-        </div>
-    </div>
-
-    <script>
-        const ball = document.getElementById('ball');
-        const circle = document.getElementById('circle');
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const resetBtn = document.getElementById('resetBtn');
-
-        // Параметры игры
-        const circleRadius = circle.offsetWidth / 2;
-        const ballRadius = ball.offsetWidth / 2;
+    </header>
+    
+    <div class="container">
+        <section class="paste-form">
+            <h2>Create New Paste</h2>
+            <form action="/create" method="post">
+                <div class="form-group">
+                    <label for="paste-content">Paste Content</label>
+                    <textarea id="paste-content" name="content" placeholder="Enter your text here..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="paste-name">Paste Name / Title (optional)</label>
+                    <input type="text" id="paste-name" name="name" placeholder="My awesome paste">
+                </div>
+                
+                <div class="form-group">
+                    <label>Syntax Highlighting</label>
+                    <select name="syntax">
+                        <option value="none">None</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="php">PHP</option>
+                        <option value="sql">SQL</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Paste Expiration</label>
+                    <div class="expiration-options">
+                        <select name="expiration">
+                            <option value="never">Never</option>
+                            <option value="10m">10 Minutes</option>
+                            <option value="1h">1 Hour</option>
+                            <option value="1d">1 Day</option>
+                            <option value="1w">1 Week</option>
+                            <option value="1m">1 Month</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="private"> Private Paste (not listed publicly)
+                    </label>
+                </div>
+                
+                <button type="submit">Create Paste</button>
+            </form>
+        </section>
         
-        let ballX = circleRadius;
-        let ballY = circleRadius;
-        let velocityX = 0;
-        let velocityY = 0;
-        let gravity = 0.2;
-        let friction = 0.99;
-        let bounce = 0.8;
-        let animationId;
-        let isRunning = false;
-
-        // Инициализация
-        function init() {
-            ballX = circleRadius;
-            ballY = circleRadius;
-            velocityX = (Math.random() - 0.5) * 10;
-            velocityY = (Math.random() - 0.5) * 10;
-            updateBallPosition();
-        }
-
-        // Обновление позиции шарика
-        function updateBallPosition() {
-            ball.style.left = `${ballX - ballRadius}px`;
-            ball.style.top = `${ballY - ballRadius}px`;
-        }
-
-        // Проверка столкновения со стенками круга
-        function checkCollision() {
-            const dx = ballX - circleRadius;
-            const dy = ballY - circleRadius;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance > circleRadius - ballRadius) {
-                // Вычисляем нормаль к точке столкновения
-                const nx = dx / distance;
-                const ny = dy / distance;
-                
-                // Проекция скорости на нормаль
-                const dotProduct = velocityX * nx + velocityY * ny;
-                
-                // Корректируем позицию шарика
-                const overlap = distance - (circleRadius - ballRadius);
-                ballX -= overlap * nx;
-                ballY -= overlap * ny;
-                
-                // Отражение скорости с учетом упругости
-                velocityX -= (1 + bounce) * dotProduct * nx;
-                velocityY -= (1 + bounce) * dotProduct * ny;
-                
-                // Добавляем трение
-                velocityX *= friction;
-                velocityY *= friction;
-            }
-        }
-
-        // Игровой цикл
-        function gameLoop() {
-            // Применяем гравитацию
-            velocityY += gravity;
-            
-            // Обновляем позицию
-            ballX += velocityX;
-            ballY += velocityY;
-            
-            // Проверяем столкновения
-            checkCollision();
-            
-            // Обновляем отображение
-            updateBallPosition();
-            
-            // Продолжаем анимацию
-            if (isRunning) {
-                animationId = requestAnimationFrame(gameLoop);
-            }
-        }
-
-        // Обработчики кнопок
-        startBtn.addEventListener('click', () => {
-            if (!isRunning) {
-                isRunning = true;
-                gameLoop();
-            }
-        });
-
-        stopBtn.addEventListener('click', () => {
-            isRunning = false;
-            cancelAnimationFrame(animationId);
-        });
-
-        resetBtn.addEventListener('click', () => {
-            isRunning = false;
-            cancelAnimationFrame(animationId);
-            init();
-        });
-
-        // Начальная инициализация
-        init();
-
-        // Можно бросить шарик кликом
-        circle.addEventListener('click', (e) => {
-            const rect = circle.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-            
-            // Устанавливаем шарик в место клика
-            ballX = clickX;
-            ballY = clickY;
-            
-            // Даем случайный импульс
-            velocityX = (Math.random() - 0.5) * 15;
-            velocityY = (Math.random() - 0.5) * 15;
-            
-            updateBallPosition();
-            
-            // Если игра не запущена, запускаем
-            if (!isRunning) {
-                isRunning = true;
-                gameLoop();
-            }
-        });
-    </script>
+        <section class="recent-pastes">
+            <h2>Recent Public Pastes</h2>
+            <ul class="paste-list">
+                <li class="paste-item">
+                    <a href="/view/abc123" class="paste-title">Configuration example</a>
+                    <div class="paste-meta">2 minutes ago • 15 lines • JavaScript</div>
+                </li>
+                <li class="paste-item">
+                    <a href="/view/def456" class="paste-title">Error log</a>
+                    <div class="paste-meta">18 minutes ago • 42 lines • None</div>
+                </li>
+                <li class="paste-item">
+                    <a href="/view/ghi789" class="paste-title">API response example</a>
+                    <div class="paste-meta">1 hour ago • 8 lines • JSON</div>
+                </li>
+                <li class="paste-item">
+                    <a href="/view/jkl012" class="paste-title">CSS snippet</a>
+                    <div class="paste-meta">3 hours ago • 24 lines • CSS</div>
+                </li>
+                <li class="paste-item">
+                    <a href="/view/mno345" class="paste-title">Database schema</a>
+                    <div class="paste-meta">1 day ago • 56 lines • SQL</div>
+                </li>
+            </ul>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>SimplePaste &copy; 2023 | <a href="/about">About</a> | <a href="/terms">Terms</a> | <a href="/privacy">Privacy</a></p>
+        </div>
+    </footer>
 </body>
-        </html>
+</html>
